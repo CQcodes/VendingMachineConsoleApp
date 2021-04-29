@@ -6,13 +6,18 @@ namespace VendingMachineConsole
     {
         void DisplayBalance();
         double AddBalance(double coin);
-
-        bool DeductBalance(double itemPrice);
+        double GetBalance();
+        bool DeductBalance(Item item);
     }
 
     public class Transaction : ITransaction
     {
-        private double balance;
+        private double balance = 100;
+
+        public double GetBalance()
+        {
+            return balance;
+        }
 
         public void DisplayBalance()
         {
@@ -33,12 +38,12 @@ namespace VendingMachineConsole
             return balance;
         }
 
-        public bool DeductBalance(double itemPrice)
+        public bool DeductBalance(Item item)
         {
-            if (itemPrice > balance)
+            if (item.Price > balance)
                 return false;
 
-            balance = balance - itemPrice;
+            balance = balance - item.Price;
 
             return true;
         }

@@ -19,6 +19,7 @@ namespace VendingMachineConsole
 
         public void StartShopping()
         {
+            Console.WriteLine("Welcome to vending machine.");
             transaction.DisplayBalance();
 
             int i = 1;
@@ -31,7 +32,7 @@ namespace VendingMachineConsole
         private int Shopping()
         {
             // display input options (Main Menu)
-            DisplayInputOptions();
+            DisplayMainMenuInputOptions();
 
             // take input
             string entry = Console.ReadLine().ToUpper();
@@ -46,31 +47,35 @@ namespace VendingMachineConsole
             }
             else if (entry == "E") // exit
             {
-                // Exit
-                Console.WriteLine("Thank you for shopping.");
-                Console.WriteLine($"Please collect your remaining balance amaount.");
-                transaction.DisplayBalance();
-
-                return -1;
+                return ExitStep();
             }
-
-            Console.WriteLine("Invalid selection.");
-            return 0;
+            else
+            {
+                Console.WriteLine("Invalid selection.");
+                return 0;
+            }
         }
 
 
+        #region Shopping-Steps
+
+        private int ExitStep()
+        {
+            DisplayExitMessage();
+            return -1;
+        }
+
         private int InsertCoinStep()
         {
-            int coin = 0;
-            DisplayMessage(Message.INSERT_COIN);
-            coin = Convert.ToInt32(Console.ReadLine());
+            CollectInsertCoinInput(out int coin);
+
             while (coin >= 0)
             {
-                transaction.AddBalance(coin);
+                if (coin > 0) transaction.AddBalance(coin);
+
                 transaction.DisplayBalance();
 
-                DisplayMessage(Message.INSERT_COIN);
-                coin = Convert.ToInt32(Console.ReadLine());
+                CollectInsertCoinInput(out coin);
             }
 
             return 1;
@@ -78,76 +83,120 @@ namespace VendingMachineConsole
 
         private int ShoppingStep()
         {
-            // display balance before shopping
-            transaction.DisplayBalance();
+            CollectShoppingInput(out int selectedItemId);
 
-            // display input options
-            Console.WriteLine("Following are the available items. Please enter the item id to dispense. Enter '-1' to exit.");
-
-            // display cart items
-            cart.DisplayCartItems();
-
-            // take input
-            var selectedItemId = Convert.ToInt32(Console.ReadLine());
-
-            while (selectedItemId > 0)
+            while (selectedItemId >= 0)
             {
-                // get item price
-                if (cart.GetItemPrice(selectedItemId, out var price))
+                if (selectedItemId > 0)
                 {
-                    // deduct price from balance
-                    if (transaction.DeductBalance(price))
+                    // get item
+                    if (cart.TryGetItem(selectedItemId, out var item))
                     {
-                        // displense item from the cart.
-                        if (cart.DispenseCartItem(selectedItemId))
+                        // deduct price from balance
+                        if (transaction.DeductBalance(item))
                         {
-                            Console.WriteLine("Item dispensed successfully. Please collect it.");
+                            // dispense item from the cart.
+                            if (cart.DispenseCartItem(item))
+                            {
+                                Console.WriteLine("Item dispensed successfully. Please collect it.");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Item out of stock.");
+                            }
                         }
                         else
                         {
-                            Console.WriteLine("Item unavailable.");
+                            Console.WriteLine($"Insufficient balance.");
                         }
                     }
                     else
                     {
-                        Console.WriteLine("Not Sufficient balance.");
+                        Console.WriteLine("Invalid Item Id entered. Not Found.");
                     }
                 }
-                else
-                {
-                    Console.WriteLine("Invalid Item Id entered.");
-                }
 
-
-                // display remaining balance
-                transaction.DisplayBalance();
-
-                // display input options
-                Console.WriteLine("Following are the available items. Please enter the item id to dispense. Enter '-1' to exit.");
-
-                // display cart items
-                cart.DisplayCartItems();
-
-                // Take input
-                selectedItemId = Convert.ToInt32(Console.ReadLine());
+                CollectShoppingInput(out selectedItemId);
             }
 
             return 1;
         }
 
+        #endregion
 
-        #region helper-methods
+        #region InputCollectors
 
-        private static void DisplayMessage(string message)
+        private void CollectInsertCoinInput(out int coin)
         {
-            Console.WriteLine(message);
+            DisplayInsertCoinMenuOptions();
+
+            if (!int.TryParse(Console.ReadLine(), out int c))
+            {
+                Console.WriteLine("Invalid input. Must be an integer.");
+                c = 0;
+            }
+
+            coin = c;
         }
 
-        private static void DisplayInputOptions()
+        private void CollectShoppingInput(out int selectedItemId)
         {
-            Console.WriteLine(Message.EXIT_CODE_MESSAGE);
+            DisplayShoppingMenuOption();
+
+            // take input
+            if (!int.TryParse(Console.ReadLine(), out int itemId))
+            {
+                Console.WriteLine("Invalid input. Must be an integer.");
+                itemId = 0;
+            }
+
+            selectedItemId = itemId;
+        }
+
+        #endregion
+
+        #region display-menu-options
+
+        private void DisplayMainMenuInputOptions()
+        {
+            Console.WriteLine("===================== MAIN MENU ======================");
             Console.WriteLine(Message.INSERT_COIN_CODE_MESSAGE);
             Console.WriteLine(Message.PURCHASE_CODE_MESSAGE);
+            Console.WriteLine(Message.EXIT_CODE_MESSAGE);
+            Console.WriteLine("======================================================");
+        }
+
+        private void DisplayShoppingMenuOption()
+        {
+            // display balance before shopping
+            transaction.DisplayBalance();
+
+            Console.WriteLine("===================== SHOPPING ======================");
+            // display input options
+            Console.WriteLine("Enter '-1' to return to Main Menu.");
+            Console.WriteLine("Enter any item id from the following list to dispense the item.");
+            Console.WriteLine("=================== AVAILABLE ITEMS ====================");
+
+            // display cart items
+            cart.DisplayCartItems();
+
+            Console.WriteLine("======================================================");
+        }
+
+        private void DisplayInsertCoinMenuOptions()
+        {
+            Console.WriteLine("===================== INSERT COIN ======================");
+            Console.WriteLine(Message.INSERT_COIN);
+            Console.WriteLine(Message.INSERT_COIN_EXIT_MESSAGE);
+            Console.WriteLine("======================================================");
+        }
+
+        private void DisplayExitMessage()
+        {
+            Console.WriteLine("=================== THANK YOU FOR SHOPPING =======================");
+            Console.WriteLine($"Please collect your remaining balance amaount.");
+            transaction.DisplayBalance();
+            Console.WriteLine("================================================================");
         }
 
         #endregion

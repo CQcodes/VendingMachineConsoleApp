@@ -7,8 +7,8 @@ namespace VendingMachineConsole
     public interface ICart
     {
         void DisplayCartItems();
-        bool DispenseCartItem(int itemId);
-        bool GetItemPrice(int id, out double price);
+        bool DispenseCartItem(Item item);
+        bool TryGetItem(int id, out Item item);
     }
 
     public class Cart : ICart
@@ -24,9 +24,9 @@ namespace VendingMachineConsole
         {
             cartItems = new List<Item>()
             {
-                new Item{ id = 1, Count = 1, Name = "Cola", Price = 100 },
-                new Item{ id = 2, Count = 1, Name = "Chips", Price = 50  },
-                new Item{ id = 3, Count = 1, Name = "Candy", Price = 65  }
+                new Item{ Id = 1, Count = 1, Name = "Cola", Price = 100 },
+                new Item{ Id = 2, Count = 1, Name = "Chips", Price = 50  },
+                new Item{ Id = 3, Count = 1, Name = "Candy", Price = 65  }
             };
         }
 
@@ -34,16 +34,15 @@ namespace VendingMachineConsole
         {
             foreach(var item in cartItems)
             {
-                Console.WriteLine($"{item.id}. {item.Name}, Price - {item.Price}, Count - {item.Count}");
+                Console.WriteLine($"id : {item.Id}, name: {item.Name}, Price: {item.Price}, Count: {item.Count}");
             }
         }
 
-        public bool DispenseCartItem(int itemId)
+        public bool DispenseCartItem(Item item)
         {
-            if(cartItems.Any(a=>a.id==itemId && a.Count > 0))
+            if(cartItems.Any(a=>a.Id==item.Id && a.Count > 0))
             {
-                int i = cartItems.IndexOf(cartItems.First(f => f.id == itemId));
-                var item = cartItems[i];
+                int i = cartItems.IndexOf(cartItems.First(f => f.Id == item.Id));
                 item.Count--;
                 cartItems[i] = item;
 
@@ -53,17 +52,14 @@ namespace VendingMachineConsole
             return false;
         }
 
-        public bool GetItemPrice(int id, out double price)
+        public bool TryGetItem(int id, out Item item)
         {
-            var item = cartItems.FirstOrDefault(a => a.id == id);
+            item = cartItems.FirstOrDefault(a => a.Id == id);
 
             if (item == null)
             {
-                price = 0;
                 return false;
             }
-
-            price = item.Price;
             return true;
         }
     }
