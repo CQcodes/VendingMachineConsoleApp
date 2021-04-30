@@ -1,4 +1,4 @@
-﻿namespace VendingMachineConsole
+﻿namespace VendingMachineConsole.Entity
 {
     public class Item
     {

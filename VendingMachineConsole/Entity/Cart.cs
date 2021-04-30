@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace VendingMachineConsole
+namespace VendingMachineConsole.Entity
 {
     public interface ICart
     {
@@ -24,9 +24,9 @@ namespace VendingMachineConsole
         {
             cartItems = new List<Item>()
             {
-                new Item{ Id = 1, Count = 1, Name = "Cola", Price = 100 },
-                new Item{ Id = 2, Count = 1, Name = "Chips", Price = 50  },
-                new Item{ Id = 3, Count = 1, Name = "Candy", Price = 65  }
+                new Item{ Id = 1, Count = 1, Name = "Cola", Price = 1.00 },
+                new Item{ Id = 2, Count = 1, Name = "Chips", Price = 0.50  },
+                new Item{ Id = 3, Count = 1, Name = "Candy", Price = 0.65  }
             };
         }
 
@@ -54,7 +54,7 @@ namespace VendingMachineConsole
 
         public bool TryGetItem(int id, out Item item)
         {
-            item = cartItems.FirstOrDefault(a => a.Id == id);
+            item = cartItems.FirstOrDefault(a => a.Id == id && a.Count > 0);
 
             if (item == null)
             {

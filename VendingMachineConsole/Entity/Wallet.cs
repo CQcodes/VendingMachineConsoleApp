@@ -1,8 +1,9 @@
 ﻿using System;
+using VendingMachineConsole.Helper;
 
-namespace VendingMachineConsole
+namespace VendingMachineConsole.Entity
 {
-    public interface ITransaction
+    public interface IWallet
     {
         void DisplayBalance();
         double AddBalance(double coin);
@@ -10,9 +11,9 @@ namespace VendingMachineConsole
         bool DeductBalance(Item item);
     }
 
-    public class Transaction : ITransaction
+    public class Wallet : IWallet
     {
-        private double balance = 100;
+        private double balance;
 
         public double GetBalance()
         {
@@ -21,12 +22,12 @@ namespace VendingMachineConsole
 
         public void DisplayBalance()
         {
-            Console.WriteLine($"your balance is : {balance}");
+            Console.WriteLine($"Your wallet balance is : {balance.ToString("C2")}");
         }
 
         public double AddBalance(double coin)
         {
-            if (coin == 5 || coin == 10 || coin == 25)
+            if (CoinsHelper.IsAcceptableDenomination(coin))
             {
                 balance = balance + coin;
             }
